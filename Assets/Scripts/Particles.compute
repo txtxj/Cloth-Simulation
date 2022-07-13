@@ -1,0 +1,17 @@
+#pragma kernel Update
+
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+};
+
+float dt;
+
+RWStructuredBuffer<Particle> Particles;
+
+[numthreads(1024,1,1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+    Particles[id.x].position = float3(id.x, 0, 0);
+}
