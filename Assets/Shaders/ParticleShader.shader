@@ -20,27 +20,20 @@ Shader "Unlit/ParticleShader"
 
             fixed4 _MainColor;
  
-            struct v2f
-            {
-                float4 position : SV_POSITION;
-            };
- 
             struct Particle
             {
                 float3 position;
-                float4 velocity;
+                float3 velocity;
             };
  
             StructuredBuffer<Particle> particleBuffer;
  
-            v2f vert(uint id : SV_VertexID)
+            float4 vert(uint id : SV_VertexID) : SV_POSITION
             {
-                v2f o;
-                o.position = UnityObjectToClipPos(float4(particleBuffer[id].position, 0));
-                return o;
+                return UnityObjectToClipPos(float4(particleBuffer[id].position, 1));
             }
  
-            fixed4 frag(v2f i) : SV_Target
+            fixed4 frag() : SV_Target
             {
                 return _MainColor;
             }

@@ -13,5 +13,5 @@ RWStructuredBuffer<Particle> Particles;
 [numthreads(1024,1,1)]
 void Update(uint3 id : SV_DispatchThreadID)
 {
-    Particles[id.x].position = float3(id.x, 0, 0);
+    Particles[id.x].position.x = float3(id.x, 0, 0);
 }
