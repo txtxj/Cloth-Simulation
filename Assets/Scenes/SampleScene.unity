@@ -294,8 +294,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.007888991, y: 0.9714977, z: -0.234655, w: 0.03266695}
-  m_LocalPosition: {x: -4.4636927, y: 4.1080236, z: 31.693525}
+  m_LocalRotation: {x: 0.049841054, y: 0.92185235, z: -0.1266202, w: 0.3628656}
+  m_LocalPosition: {x: -1.1944599, y: 0.14436415, z: 1.2867537}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -327,11 +327,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compute: {fileID: 7200000, guid: 2ca7f376d44a01f47824753363817c42, type: 3}
   material: {fileID: 2100000, guid: fd5ab1162e1efc04098cb85d822702d5, type: 2}
-  particleCount: 10
-  dt: 0.01
+  clothSize: {x: 5, y: 5}
+  gapSize: 0.1
+  dt: 0.0001
   ks: 10
   kd: 1
-  mass: 1
+  mass: 0.01
   gravity: {x: 0, y: -1, z: 0}
 --- !u!1 &1791911344
 GameObject:
