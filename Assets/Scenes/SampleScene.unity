@@ -253,8 +253,8 @@ Camera:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -294,8 +294,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.049841054, y: 0.92185235, z: -0.1266202, w: 0.3628656}
-  m_LocalPosition: {x: -1.1944599, y: 0.14436415, z: 1.2867537}
+  m_LocalRotation: {x: -0.0021582658, y: 0.9975538, z: -0.0599251, w: -0.035927393}
+  m_LocalPosition: {x: 1.428407, y: 2.3942423, z: 19.804731}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -327,13 +327,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compute: {fileID: 7200000, guid: 2ca7f376d44a01f47824753363817c42, type: 3}
   material: {fileID: 2100000, guid: fd5ab1162e1efc04098cb85d822702d5, type: 2}
-  clothSize: {x: 5, y: 5}
-  gapSize: 0.1
-  dt: 0.0001
-  ks: 10
-  kd: 1
-  mass: 0.01
-  gravity: {x: 0, y: -1, z: 0}
+  clothSize: {x: 2, y: 2}
+  gapSize: 1
+  dt: 0.01
+  ks: 100
+  kd: 0.005
+  mass: 1
+  gravity: {x: 0, y: -9.8, z: 0}
 --- !u!1 &1791911344
 GameObject:
   m_ObjectHideFlags: 0

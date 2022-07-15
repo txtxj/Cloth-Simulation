@@ -33,7 +33,7 @@ public class ParticleSolver : MonoBehaviour
     private struct Particle
     {
         public Vector3 position;
-        public Vector3 velocity;
+        public Vector3 oldPosition;
         public Vector3 force;
         public float isFixed;
     }
@@ -55,10 +55,10 @@ public class ParticleSolver : MonoBehaviour
         {
             for (int j = 0; j < clothSize.y; j++)
             {
+                particles[i * clothSize.y + j].oldPosition = 
                 particles[i * clothSize.y + j].position = new Vector3(-i, 0f, j) * gapSize;
-                particles[i * clothSize.y + j].velocity = Vector3.zero;
                 particles[i * clothSize.y + j].force = Vector3.zero;
-                particles[i * clothSize.y + j].isFixed = j == 0 ? 1f : 0f;
+                particles[i * clothSize.y + j].isFixed = j == 0 && (i == 0 || i == clothSize.x - 1) ? 1f : 0f;
             }
         }
     }
@@ -95,6 +95,11 @@ public class ParticleSolver : MonoBehaviour
                     springs.Add(new Spring(u, u - clothSize.y + 1, particles));
                 }
             }
+        }
+
+        foreach (Spring s in springs)
+        {
+            Debug.Log("Tied " + s.node.x + " and " + s.node.y);
         }
     }
 

@@ -4,7 +4,7 @@
 struct Particle
 {
     float3 position;
-    float3 velocity;
+    float3 oldPosition;
     float3 force;
     float isFixed;
 };
@@ -29,8 +29,9 @@ void UpdateParticles(uint3 id : SV_DispatchThreadID)
 {
     if (particles[id.x].isFixed) return;
     float3 acc = particles[id.x].force * wass + gravity;
-    particles[id.x].velocity += acc * dt;
-    particles[id.x].position += particles[id.x].velocity * dt;
+    float3 tmpPosition = particles[id.x].position;
+    particles[id.x].position += (1 - kd) * (tmpPosition - particles[id.x].oldPosition) + acc * dt * dt;
+    particles[id.x].oldPosition = tmpPosition;
     particles[id.x].force = float3(0, 0, 0);
 }
 
