@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
+using Vector3 = UnityEngine.Vector3;
 
 public class ParticleSolver : MonoBehaviour
 {
@@ -144,7 +146,9 @@ public class ParticleSolver : MonoBehaviour
 
     private void OnDestroy()
     {
-        //m_ParticleBuffer.Release();
-        //m_ParticleBuffer = null;
+        m_ParticleBuffer.Release();
+        m_SpringBuffer.Release();
+        m_ParticleBuffer = null;
+        m_SpringBuffer = null;
     }
 }
