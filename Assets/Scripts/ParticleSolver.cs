@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 using Vector3 = UnityEngine.Vector3;
 
 public class ParticleSolver : MonoBehaviour
