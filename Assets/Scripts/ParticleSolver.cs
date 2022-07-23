@@ -5,7 +5,7 @@ using Vector3 = UnityEngine.Vector3;
 
 public class ParticleSolver : MonoBehaviour
 {
-    private const int WARP_SIZE = 1024;
+    private const int WARP_SIZE = 8;
     
     public ComputeShader compute;
     public Material material;
@@ -17,33 +17,23 @@ public class ParticleSolver : MonoBehaviour
     public float kd;
     public float mass;
     public Vector3 gravity;
+
+    public bool structural;
+    public bool shear;
+    public bool flexion;
     
     private int particleKernelId;
     private int springKernelId;
     private ComputeBuffer m_ParticleBuffer;
-    private ComputeBuffer m_SpringBuffer;
-    private int particleWarpCount;
-    private int springWarpCount;
+    private Vector2Int groupSize;
     private int particleCount;
-    private int springCount;
 
     private struct Particle
     {
         public Vector3 position;
-        public Vector3 oldPosition;
+        public Vector3 velocity;
         public Vector3 force;
         public float isFixed;
-    }
-
-    private struct Spring
-    {
-        public Vector2Int node;
-        public float length;
-        public Spring(int a, int b, Particle[] particles)
-        {
-            node = new Vector2Int(a, b);
-            length = (particles[a].position - particles[b].position).magnitude;
-        }
     }
 
     private void InitiateParticles(Particle[] particles)
@@ -52,85 +42,41 @@ public class ParticleSolver : MonoBehaviour
         {
             for (int j = 0; j < clothSize.y; j++)
             {
-                particles[i * clothSize.y + j].oldPosition = 
-                particles[i * clothSize.y + j].position = new Vector3(-i, 0f, j) * gapSize;
+                particles[i * clothSize.y + j].velocity = Vector3.zero; 
+                particles[i * clothSize.y + j].position = new Vector3(i, -j, 0) * gapSize;
                 particles[i * clothSize.y + j].force = Vector3.zero;
                 particles[i * clothSize.y + j].isFixed = j == 0 && (i == 0 || i == clothSize.x - 1) ? 1f : 0f;
             }
         }
     }
 
-    private void InitiateSprings(List<Spring> springs, Particle[] particles)
-    {
-        for (int i = 0; i < clothSize.x; i++)
-        {
-            for (int j = 0; j < clothSize.y; j++)
-            {
-                int u = i * clothSize.y + j;
-                if (j != clothSize.y - 1)
-                {
-                    springs.Add(new Spring(u, u + 1, particles));
-                }
-                if (i != clothSize.x - 1)
-                {
-                    springs.Add(new Spring(u, u + clothSize.y, particles));
-                }
-                if (j != clothSize.y - 1 && j != clothSize.y - 2)
-                {
-                    springs.Add(new Spring(u, u + 2, particles));
-                }
-                if (i != clothSize.x - 1 && i != clothSize.x - 2)
-                {
-                    springs.Add(new Spring(u, u + clothSize.y * 2, particles));
-                }
-                if (j != clothSize.y - 1 && i != clothSize.x - 1)
-                {
-                    springs.Add(new Spring(u, u + clothSize.y + 1, particles));
-                }
-                if (j != clothSize.y - 1 && i != 0)
-                {
-                    springs.Add(new Spring(u, u - clothSize.y + 1, particles));
-                }
-            }
-        }
-
-        foreach (Spring s in springs)
-        {
-            Debug.Log("Tied " + s.node.x + " and " + s.node.y);
-        }
-    }
 
     private void Start()
     {
         particleCount = clothSize.x * clothSize.y;
         Particle[] particles = new Particle[particleCount];
-        List<Spring> springs = new List<Spring>();
         InitiateParticles(particles);
-        InitiateSprings(springs, particles);
-        springCount = springs.Count;
         m_ParticleBuffer = new ComputeBuffer(particleCount, Marshal.SizeOf(typeof(Particle)));
-        m_SpringBuffer = new ComputeBuffer(springCount, Marshal.SizeOf(typeof(Spring)));
         m_ParticleBuffer.SetData(particles);
-        m_SpringBuffer.SetData(springs);
         particleKernelId = compute.FindKernel("UpdateParticles");
         springKernelId = compute.FindKernel("UpdateSprings");
         compute.SetBuffer(particleKernelId, "particles", m_ParticleBuffer);
         compute.SetBuffer(springKernelId, "particles", m_ParticleBuffer);
-        compute.SetBuffer(springKernelId, "springs", m_SpringBuffer);
         compute.SetFloat("dt", dt);
         compute.SetFloat("ks", ks);
         compute.SetFloat("kd", kd);
         compute.SetFloat("wass", 1f / mass);
         compute.SetVector("gravity", gravity);
+        compute.SetVector("size", new Vector4(clothSize.x, clothSize.y, clothSize.x * clothSize.y));
+        compute.SetVector("rest", new Vector3(gapSize, gapSize * Mathf.Sqrt(2), gapSize * 2));
         material.SetBuffer("particleBuffer", m_ParticleBuffer);
-        particleWarpCount = Mathf.CeilToInt((float)particleCount / WARP_SIZE);
-        springWarpCount = Mathf.CeilToInt((float)springCount / WARP_SIZE);
+        groupSize = new Vector2Int(Mathf.CeilToInt((float)clothSize.x / WARP_SIZE), Mathf.CeilToInt((float)clothSize.y / WARP_SIZE));
     }
 
     private void Update()
     {
-        compute.Dispatch(springKernelId, springWarpCount, 1, 1);
-        compute.Dispatch(particleKernelId, particleWarpCount, 1, 1);
+        compute.Dispatch(springKernelId, groupSize.x, groupSize.y, 1);
+        compute.Dispatch(particleKernelId, groupSize.x, groupSize.y, 1);
     }
 
     private void OnRenderObject()
@@ -142,8 +88,11 @@ public class ParticleSolver : MonoBehaviour
     private void OnDestroy()
     {
         m_ParticleBuffer.Release();
-        m_SpringBuffer.Release();
         m_ParticleBuffer = null;
-        m_SpringBuffer = null;
+    }
+
+    public void PrintSpring()
+    {
+        
     }
 }
