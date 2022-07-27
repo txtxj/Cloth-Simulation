@@ -23,7 +23,7 @@ Shader "Unlit/ParticleShader"
             struct Particle
             {
                 float3 position;
-                float3 oldPosition;
+                float3 velocity;
                 float3 force;
                 float isFixed;
             };

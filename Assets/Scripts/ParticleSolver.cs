@@ -18,10 +18,6 @@ public class ParticleSolver : MonoBehaviour
     public float mass;
     public Vector3 gravity;
 
-    public bool structural;
-    public bool shear;
-    public bool flexion;
-    
     private int particleKernelId;
     private int springKernelId;
     private ComputeBuffer m_ParticleBuffer;

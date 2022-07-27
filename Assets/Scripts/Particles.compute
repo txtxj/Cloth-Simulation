@@ -4,46 +4,66 @@
 struct Particle
 {
     float3 position;
-    float3 oldPosition;
+    float3 velocity;
     float3 force;
     float isFixed;
 };
 
-struct Spring
-{
-    int2 node;
-    float length;
-};
-
+uint3 size;
 float dt;
 float ks;
 float kd;
 float wass;
 float3 gravity;
+float3 rest;
+
+static uint2 springs[12] =
+{
+    uint2(0, -1), uint2(0, 1), uint2(-1, 0), uint2(1, 0),
+    uint2(-1, -1), uint2(-1, 1), uint2(1, -1), uint2(1, 1),
+    uint2(0, -2), uint2(0, 2), uint2(-2, 0), uint2(2, 0)
+};
 
 RWStructuredBuffer<Particle> particles;
-RWStructuredBuffer<Spring> springs;
 
-[numthreads(1024,1,1)]
-void UpdateParticles(uint3 id : SV_DispatchThreadID)
+uint GetIndex(uint3 id)
 {
-    if (particles[id.x].isFixed) return;
-    float3 acc = particles[id.x].force * wass + gravity;
-    float3 tmpPosition = particles[id.x].position;
-    particles[id.x].position += (1 - kd) * (tmpPosition - particles[id.x].oldPosition) + acc * dt * dt;
-    particles[id.x].oldPosition = tmpPosition;
-    particles[id.x].force = float3(0, 0, 0);
+    return id.x * size.y + id.y;
 }
 
-[numthreads(1024,1,1)]
+uint GetIndex(uint2 id)
+{
+    return id.x * size.y + id.y;
+}
+
+bool IsValid(uint2 id)
+{
+    return id.x < size.x && id.y < size.y;
+}
+
+[numthreads(8,8,1)]
+void UpdateParticles(uint3 id : SV_DispatchThreadID)
+{
+    uint index = GetIndex(id);
+    if (particles[index].isFixed) return;
+    particles[index].velocity += (particles[index].force * wass + gravity) * dt;
+    particles[index].position += particles[index].velocity * dt;
+    particles[index].force = 0;
+}
+
+[numthreads(8,8,1)]
 void UpdateSprings(uint3 id : SV_DispatchThreadID)
 {
-    int a = springs[id.x].node.x;
-    int b = springs[id.x].node.y;
-    float3 dir = particles[a].position - particles[b].position;
-    float length = sqrt(dot(dir, dir));
-    dir = normalize(dir);
-    float3 force = ks * (length - springs[id.x].length) * dir;
-    particles[a].force -= force;
-    particles[b].force += force;
+    uint index = GetIndex(id);
+    if (particles[index].isFixed) return;
+    for (int i = 0; i < 12; i++)
+    {
+        uint2 pos = id.xy + springs[i];
+        if (IsValid(pos))
+        {
+            uint posIndex = GetIndex(pos);
+            float3 dir = particles[posIndex].position - particles[index].position;
+            particles[index].force += ks * (1 - rest[i / 4] * rcp(length(dir))) * dir;
+        }
+    }
 }
