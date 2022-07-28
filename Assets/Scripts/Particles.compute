@@ -67,7 +67,9 @@ void UpdateSprings(uint3 id : SV_DispatchThreadID)
         {
             const int posIndex = GetIndex(pos);
             const float3 dir = particles[posIndex].position - particles[index].position;
-            particles[index].force += ks * (1 - rest[i / 4] * rcp(length(dir))) * dir;
+            const float3 ndir = normalize(dir);
+            particles[index].force += ks * (length(dir) - rest[i / 4]) * ndir;
+            particles[index].force -= kd * dot(ndir, particles[index].velocity) * ndir;
         }
     }
 }
