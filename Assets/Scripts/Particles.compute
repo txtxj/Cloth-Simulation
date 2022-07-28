@@ -1,11 +1,13 @@
 #pragma kernel UpdateParticles
 #pragma kernel UpdateSprings
+#pragma kernel UpdateNormals
 
 struct Particle
 {
     float3 position;
     float3 velocity;
     float3 force;
+    float3 normal;
     float isFixed;
 };
 
@@ -13,7 +15,7 @@ struct Particle
 float dt;
 float ks;
 float kd;
-float wass;
+float mass;
 float3 gravity;
 int3 size;
 float3 rest;
@@ -23,6 +25,11 @@ static int2 springs[12] =
     int2(0, -1), int2(0, 1), int2(-1, 0), int2(1, 0),
     int2(-1, -1), int2(-1, 1), int2(1, -1), int2(1, 1),
     int2(0, -2), int2(0, 2), int2(-2, 0), int2(2, 0)
+};
+
+static int2 neighbor[5] =
+{
+    int2(0, -1), int2(1, 0), int2(0, 1), int2(-1, 0), int2(0, -1)
 };
 
 RWStructuredBuffer<Particle> particles;
@@ -43,12 +50,35 @@ bool IsValid(int2 id)
 }
 
 [numthreads(1024,1,1)]
+void UpdateNormals(uint3 id : SV_DispatchThreadID)
+{
+    const int index = id.x;
+    if (index >= size.z) return;
+    id.xy = GetId(index);
+    for (int i = 0; i < 4; i++)
+    {
+        const int2 p1 = id.xy + springs[i];
+        const int2 p2 = id.xy + springs[i + 1];
+        if (IsValid(p1) && IsValid(p2))
+        {
+            const float3 pos0 = particles[index].position;
+            const float3 pos1 = particles[GetIndex(p1)].position;
+            const float3 pos2 = particles[GetIndex(p2)].position;
+            const float3 e1 = pos0 - pos1;
+            const float3 e2 = pos0 - pos2;
+            particles[index].normal += normalize(cross(e1, e2));
+        }
+    }
+    particles[index].normal = normalize(particles[index].normal);
+}
+
+[numthreads(1024,1,1)]
 void UpdateParticles(uint3 id : SV_DispatchThreadID)
 {
     const int index = id.x;
     if (index >= size.z) return;
     if (particles[index].isFixed) return;
-    particles[index].velocity += (particles[index].force * wass + gravity) * dt;
+    particles[index].velocity += particles[index].force * rcp(mass) * dt;
     particles[index].position += particles[index].velocity * dt;
     particles[index].force = 0;
 }
@@ -68,8 +98,12 @@ void UpdateSprings(uint3 id : SV_DispatchThreadID)
             const int posIndex = GetIndex(pos);
             const float3 dir = particles[posIndex].position - particles[index].position;
             const float3 ndir = normalize(dir);
+            // spring
             particles[index].force += ks * (length(dir) - rest[i / 4]) * ndir;
+            // damping
             particles[index].force -= kd * dot(ndir, particles[index].velocity) * ndir;
+            // gravity
+            particles[index].force += gravity * mass;
         }
     }
 }
