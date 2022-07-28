@@ -5,7 +5,7 @@ using Vector3 = UnityEngine.Vector3;
 
 public class ParticleSolver : MonoBehaviour
 {
-    private const int WARP_SIZE = 8;
+    private const int WARP_SIZE = 1024;
     
     public ComputeShader compute;
     public Material material;
@@ -21,8 +21,8 @@ public class ParticleSolver : MonoBehaviour
     private int particleKernelId;
     private int springKernelId;
     private ComputeBuffer m_ParticleBuffer;
-    private Vector2Int groupSize;
     private int particleCount;
+    private int groupCount;
 
     private struct Particle
     {
@@ -39,7 +39,7 @@ public class ParticleSolver : MonoBehaviour
             for (int j = 0; j < clothSize.y; j++)
             {
                 particles[i * clothSize.y + j].velocity = Vector3.zero; 
-                particles[i * clothSize.y + j].position = new Vector3(i, -j, 0) * gapSize;
+                particles[i * clothSize.y + j].position = new Vector3(i, 0, -j) * gapSize;
                 particles[i * clothSize.y + j].force = Vector3.zero;
                 particles[i * clothSize.y + j].isFixed = j == 0 && (i == 0 || i == clothSize.x - 1) ? 1f : 0f;
             }
@@ -63,16 +63,16 @@ public class ParticleSolver : MonoBehaviour
         compute.SetFloat("kd", kd);
         compute.SetFloat("wass", 1f / mass);
         compute.SetVector("gravity", gravity);
-        compute.SetVector("size", new Vector4(clothSize.x, clothSize.y, clothSize.x * clothSize.y));
-        compute.SetVector("rest", new Vector3(gapSize, gapSize * Mathf.Sqrt(2), gapSize * 2));
+        compute.SetInts("size", new int[]{clothSize.x, clothSize.y, clothSize.x * clothSize.y});
+        compute.SetVector("rest", new Vector3(gapSize, gapSize * Mathf.Sqrt(2f), gapSize * 2f));
         material.SetBuffer("particleBuffer", m_ParticleBuffer);
-        groupSize = new Vector2Int(Mathf.CeilToInt((float)clothSize.x / WARP_SIZE), Mathf.CeilToInt((float)clothSize.y / WARP_SIZE));
+        groupCount = (clothSize.x * clothSize.y + WARP_SIZE - 1) / WARP_SIZE;
     }
 
     private void Update()
     {
-        compute.Dispatch(springKernelId, groupSize.x, groupSize.y, 1);
-        compute.Dispatch(particleKernelId, groupSize.x, groupSize.y, 1);
+        compute.Dispatch(springKernelId, groupCount, 1, 1);
+        compute.Dispatch(particleKernelId, groupCount, 1, 1);
     }
 
     private void OnRenderObject()

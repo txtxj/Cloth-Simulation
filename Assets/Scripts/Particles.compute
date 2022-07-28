@@ -9,60 +9,64 @@ struct Particle
     float isFixed;
 };
 
-uint3 size;
+
 float dt;
 float ks;
 float kd;
 float wass;
 float3 gravity;
+int3 size;
 float3 rest;
 
-static uint2 springs[12] =
+static int2 springs[12] =
 {
-    uint2(0, -1), uint2(0, 1), uint2(-1, 0), uint2(1, 0),
-    uint2(-1, -1), uint2(-1, 1), uint2(1, -1), uint2(1, 1),
-    uint2(0, -2), uint2(0, 2), uint2(-2, 0), uint2(2, 0)
+    int2(0, -1), int2(0, 1), int2(-1, 0), int2(1, 0),
+    int2(-1, -1), int2(-1, 1), int2(1, -1), int2(1, 1),
+    int2(0, -2), int2(0, 2), int2(-2, 0), int2(2, 0)
 };
 
 RWStructuredBuffer<Particle> particles;
 
-uint GetIndex(uint3 id)
+int2 GetId(int index)
+{
+    return int2(index / size.y, index % size.y);
+}
+
+int GetIndex(int2 id)
 {
     return id.x * size.y + id.y;
 }
 
-uint GetIndex(uint2 id)
+bool IsValid(int2 id)
 {
-    return id.x * size.y + id.y;
+    return id.x >= 0 && id.x < size.x && id.y >= 0 && id.y < size.y;
 }
 
-bool IsValid(uint2 id)
-{
-    return id.x < size.x && id.y < size.y;
-}
-
-[numthreads(8,8,1)]
+[numthreads(1024,1,1)]
 void UpdateParticles(uint3 id : SV_DispatchThreadID)
 {
-    uint index = GetIndex(id);
+    const int index = id.x;
+    if (index >= size.z) return;
     if (particles[index].isFixed) return;
     particles[index].velocity += (particles[index].force * wass + gravity) * dt;
     particles[index].position += particles[index].velocity * dt;
     particles[index].force = 0;
 }
 
-[numthreads(8,8,1)]
+[numthreads(1024,1,1)]
 void UpdateSprings(uint3 id : SV_DispatchThreadID)
 {
-    uint index = GetIndex(id);
+    const int index = id.x;
+    if (index >= size.z) return;
     if (particles[index].isFixed) return;
+    id.xy = GetId(index);
     for (int i = 0; i < 12; i++)
     {
-        uint2 pos = id.xy + springs[i];
+        const int2 pos = id.xy + springs[i];
         if (IsValid(pos))
         {
-            uint posIndex = GetIndex(pos);
-            float3 dir = particles[posIndex].position - particles[index].position;
+            const int posIndex = GetIndex(pos);
+            const float3 dir = particles[posIndex].position - particles[index].position;
             particles[index].force += ks * (1 - rest[i / 4] * rcp(length(dir))) * dir;
         }
     }

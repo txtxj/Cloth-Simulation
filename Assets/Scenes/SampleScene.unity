@@ -607,7 +607,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.175932, y: -1.1536692, z: -6.434821}
+  m_LocalPosition: {x: 2.8613696, y: -3.6117146, z: -14.1031885}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -639,11 +639,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compute: {fileID: 7200000, guid: 2ca7f376d44a01f47824753363817c42, type: 3}
   material: {fileID: 2100000, guid: fd5ab1162e1efc04098cb85d822702d5, type: 2}
-  clothSize: {x: 2, y: 2}
+  clothSize: {x: 8, y: 8}
   gapSize: 1
-  dt: 0.00001
-  ks: 10000
-  kd: 0.5
+  dt: 0.005
+  ks: 1000
+  kd: 0.6
   mass: 1
   gravity: {x: 0, y: -9.8, z: 0}
 --- !u!1 &1519970185
