@@ -107,6 +107,8 @@ void UpdateSprings(uint3 id : SV_DispatchThreadID)
             particles[index].force -= kd * dot(ndir, particles[index].velocity) * ndir;
             // gravity
             particles[index].force += gravity * mass;
+            // wind
+            particles[index].force -= wind * dot(winddir, particles[index].normal) * winddir;
         }
     }
 }

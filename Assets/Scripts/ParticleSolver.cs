@@ -16,6 +16,8 @@ public class ParticleSolver : MonoBehaviour
     public float kd;
     public float mass;
     public Vector3 gravity;
+    public float windStrength;
+    public Vector3 windDir;
 
     private int particleKernelId;
     private int springKernelId;
@@ -70,6 +72,8 @@ public class ParticleSolver : MonoBehaviour
         compute.SetVector("gravity", gravity);
         compute.SetInts("size", new int[]{clothSize.x, clothSize.y, clothSize.x * clothSize.y});
         compute.SetVector("rest", new Vector3(gapSize, gapSize * Mathf.Sqrt(2f), gapSize * 2f));
+        compute.SetFloat("wind", windStrength);
+        compute.SetVector("winddir", windDir.normalized);
         material.SetBuffer("particleBuffer", m_ParticleBuffer);
         groupCount = (clothSize.x * clothSize.y + WARP_SIZE - 1) / WARP_SIZE;
     }
