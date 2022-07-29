@@ -82,7 +82,7 @@ Shader "Custom/BlinnPhone"
                 if (_IsSpecular)
                 {
                     fixed3 h = normalize(view + light);
-                    color += _Specular * pow(saturate(dot(h, i.normal)), _SpecularPow);
+                    color += (2 + _Specular) / (2 * UNITY_PI) * pow(saturate(dot(h, i.normal)), _SpecularPow);
                 }
                 color.a = 1;
                 return color;
