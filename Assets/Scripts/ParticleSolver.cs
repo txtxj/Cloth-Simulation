@@ -65,6 +65,13 @@ public class ParticleSolver : MonoBehaviour
         compute.SetBuffer(particleKernelId, "particles", m_ParticleBuffer);
         compute.SetBuffer(springKernelId, "particles", m_ParticleBuffer);
         compute.SetBuffer(normalKernelId, "particles", m_ParticleBuffer);
+        UpdateParams();
+        material.SetBuffer("particleBuffer", m_ParticleBuffer);
+        groupCount = (clothSize.x * clothSize.y + WARP_SIZE - 1) / WARP_SIZE;
+    }
+
+    private void UpdateParams()
+    {
         compute.SetFloat("dt", dt);
         compute.SetFloat("ks", ks);
         compute.SetFloat("kd", kd);
@@ -74,8 +81,6 @@ public class ParticleSolver : MonoBehaviour
         compute.SetVector("rest", new Vector3(gapSize, gapSize * Mathf.Sqrt(2f), gapSize * 2f));
         compute.SetFloat("wind", windStrength);
         compute.SetVector("winddir", windDir.normalized);
-        material.SetBuffer("particleBuffer", m_ParticleBuffer);
-        groupCount = (clothSize.x * clothSize.y + WARP_SIZE - 1) / WARP_SIZE;
     }
 
     private void InitiateIndexBuffer()
@@ -106,6 +111,9 @@ public class ParticleSolver : MonoBehaviour
 
     private void Update()
     {
+        #if UNITY_EDITOR
+        UpdateParams();
+        #endif
         compute.Dispatch(springKernelId, groupCount, 1, 1);
         compute.Dispatch(particleKernelId, groupCount, 1, 1);
         compute.Dispatch(normalKernelId, groupCount, 1, 1);
