@@ -293,8 +293,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.018312734, y: 0.68646127, z: 0.017293982, w: -0.72673005}
-  m_LocalPosition: {x: 63.107178, y: -13.401905, z: -1.5083648}
+  m_LocalRotation: {x: 0.06855118, y: -0.598045, z: 0.05143915, w: 0.796867}
+  m_LocalPosition: {x: 62.97741, y: -11.867144, z: -1.1854649}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -364,5 +364,5 @@ MonoBehaviour:
   kd: 0.6
   mass: 1
   gravity: {x: 0, y: -9.8, z: 0}
-  windStrength: 10
+  windStrength: 5
   windDir: {x: 0, y: 0, z: 1}
