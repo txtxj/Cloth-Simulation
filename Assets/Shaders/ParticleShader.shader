@@ -3,6 +3,7 @@ Shader "Custom/BlinnPhone"
     Properties
     {
         _MainColor ("Color", Color) = (1, 1, 1, 1)
+        _MainTex ("Texture", 2D) = "white" {}
         [Space(20)]
         [MaterialToggle] _IsAmbient ("Ambient", float) = 0
         [MaterialToggle] _IsDiffuse ("Diffuse", float) = 0
@@ -22,6 +23,8 @@ Shader "Custom/BlinnPhone"
         #include "UnityCG.cginc"
 
         fixed4 _MainColor;
+        sampler2D _MainTex;
+        float4 _MainTex_ST;
 
         float _IsAmbient;
         float _IsDiffuse;
@@ -37,6 +40,7 @@ Shader "Custom/BlinnPhone"
             float3 velocity;
             float3 force;
             float3 normal;
+            float2 uv;
             float isFixed;
         };
 
@@ -45,6 +49,7 @@ Shader "Custom/BlinnPhone"
             float4 position : SV_POSITION;
             float4 worldPos : TEXCOORD0;
             float3 normal : TEXCOORD1;
+            float2 uv : TEXCOORD2;
         };
 
         StructuredBuffer<Particle> particleBuffer;
@@ -55,12 +60,13 @@ Shader "Custom/BlinnPhone"
             o.position = UnityObjectToClipPos(float4(particleBuffer[id].position, 1));
             o.worldPos = mul(unity_ObjectToWorld, particleBuffer[id].position);
             o.normal = UnityObjectToWorldNormal(particleBuffer[id].normal);
+            o.uv = particleBuffer[id].uv;
             return o;
         }
 
         fixed4 frag(v2f i) : SV_Target
         {
-            fixed4 color = fixed4(0, 0, 0, 0);
+            fixed4 color = 0;
             fixed4 light = normalize(_WorldSpaceLightPos0);
             fixed3 view = normalize(WorldSpaceViewDir(i.position));
             i.normal = normalize(i.normal);
@@ -70,7 +76,7 @@ Shader "Custom/BlinnPhone"
             }
             if (_IsDiffuse)
             {
-                color += _MainColor * (_Alpha * saturate(dot(i.normal, light)) + 1 - _Alpha);
+                color += tex2D(_MainTex, i.uv) * (_Alpha * saturate(dot(i.normal, light)) + 1 - _Alpha);
             }
             if (_IsSpecular)
             {

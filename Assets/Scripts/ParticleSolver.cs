@@ -10,6 +10,7 @@ public class ParticleSolver : MonoBehaviour
     public Material material;
     public Vector2Int clothSize;
     public float gapSize;
+    public Texture texture;
 
     public float dt;
     public float ks;
@@ -34,6 +35,7 @@ public class ParticleSolver : MonoBehaviour
         public Vector3 velocity;
         public Vector3 force;
         public Vector3 normal;
+        public Vector2 uv;
         public float isFixed;
     }
 
@@ -48,6 +50,7 @@ public class ParticleSolver : MonoBehaviour
                 particles[id].position = new Vector3(i, 0, -j) * gapSize;
                 particles[id].force = Vector3.zero;
                 particles[id].isFixed = j == 0 && (i == 0 || i == clothSize.x - 1) ? 1f : 0f;
+                particles[id].uv = new Vector2(i / (clothSize.x - 1.0f), j / (clothSize.y - 1.0f));
             }
         }
     }
@@ -67,6 +70,7 @@ public class ParticleSolver : MonoBehaviour
         compute.SetBuffer(normalKernelId, "particles", m_ParticleBuffer);
         UpdateParams();
         material.SetBuffer("particleBuffer", m_ParticleBuffer);
+        material.SetTexture("_MainTex", texture);
         groupCount = (clothSize.x * clothSize.y + WARP_SIZE - 1) / WARP_SIZE;
     }
 
